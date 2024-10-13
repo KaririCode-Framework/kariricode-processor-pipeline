@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "kariricode/contract",
-            "version": "v2.7.0",
+            "version": "v2.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/KaririCode-Framework/kariricode-contract.git",
-                "reference": "96277f44c0e2c692100410053f01ed6f02164f3c"
+                "reference": "fed3014baa00e0d1527602bf1d1de1a31793f173"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KaririCode-Framework/kariricode-contract/zipball/96277f44c0e2c692100410053f01ed6f02164f3c",
-                "reference": "96277f44c0e2c692100410053f01ed6f02164f3c",
+                "url": "https://api.github.com/repos/KaririCode-Framework/kariricode-contract/zipball/fed3014baa00e0d1527602bf1d1de1a31793f173",
+                "reference": "fed3014baa00e0d1527602bf1d1de1a31793f173",
                 "shasum": ""
             },
             "require": {
@@ -66,7 +66,7 @@
                 "issues": "https://github.com/KaririCode-Framework/kariricode-contract/issues",
                 "source": "https://github.com/KaririCode-Framework/kariricode-contract"
             },
-            "time": "2024-10-13T20:28:43+00:00"
+            "time": "2024-10-13T22:20:45+00:00"
         },
         {
             "name": "kariricode/data-structure",
@@ -5047,12 +5047,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.3"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }
