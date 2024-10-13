@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "22bf2f30b1441f6fdea16b4723c0184a",
+    "content-hash": "10e03c525af8271cfbdbaeb2521a40f4",
     "packages": [
         {
             "name": "kariricode/contract",
-            "version": "v2.6.3",
+            "version": "v2.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/KaririCode-Framework/kariricode-contract.git",
-                "reference": "5d98b009c7c5c20dd63b4440405ac81f93544e7d"
+                "reference": "96277f44c0e2c692100410053f01ed6f02164f3c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KaririCode-Framework/kariricode-contract/zipball/5d98b009c7c5c20dd63b4440405ac81f93544e7d",
-                "reference": "5d98b009c7c5c20dd63b4440405ac81f93544e7d",
+                "url": "https://api.github.com/repos/KaririCode-Framework/kariricode-contract/zipball/96277f44c0e2c692100410053f01ed6f02164f3c",
+                "reference": "96277f44c0e2c692100410053f01ed6f02164f3c",
                 "shasum": ""
             },
             "require": {
@@ -66,7 +66,7 @@
                 "issues": "https://github.com/KaririCode-Framework/kariricode-contract/issues",
                 "source": "https://github.com/KaririCode-Framework/kariricode-contract"
             },
-            "time": "2024-10-10T21:05:49+00:00"
+            "time": "2024-10-13T20:28:43+00:00"
         },
         {
             "name": "kariricode/data-structure",
