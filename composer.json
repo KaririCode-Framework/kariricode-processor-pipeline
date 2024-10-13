@@ -1,0 +1,49 @@
+{
+  "name": "kariricode/processor-pipeline",
+  "description": "A flexible and extensible processor pipeline component for the KaririCode framework. Enables the creation of modular, configurable processing chains for data transformation, validation, and sanitization tasks",
+  "keywords": [
+    "kariricode",
+    "processor",
+    "pipeline",
+    "data processing",
+    "configurable",
+    "modular",
+    "php"
+  ],
+  "version": "1.0.0",
+  "homepage": "https://kariricode.org",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Walmir Silva",
+      "email": "community@kariricode.org"
+    }
+  ],
+  "require": {
+    "php": "^8.3",
+    "kariricode/data-structure": "^1.1",
+    "kariricode/contract": "^2.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "KaririCode\\ProcessorPipeline\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "KaririCode\\ProcessorPipeline\\Tests\\": "tests"
+    }
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.51",
+    "phpstan/phpstan": "^1.10",
+    "phpunit/phpunit": "^11.0",
+    "squizlabs/php_codesniffer": "^3.9",
+    "enlightn/security-checker": "^2.0"
+  },
+  "support": {
+    "issues": "https://github.com/KaririCode-Framework/kariricode-processor-pipeline/issues",
+    "source": "https://github.com/KaririCode-Framework/kariricode-processor-pipeline"
+  }
+}
