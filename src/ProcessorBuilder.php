@@ -7,9 +7,10 @@ namespace KaririCode\ProcessorPipeline;
 use KaririCode\Contract\Processor\ConfigurableProcessor;
 use KaririCode\Contract\Processor\Pipeline;
 use KaririCode\Contract\Processor\Processor;
+use KaririCode\Contract\Processor\ProcessorBuilder as ProcessorBuilderContract;
 use KaririCode\Contract\Processor\ProcessorRegistry;
 
-class ProcessorBuilder
+class ProcessorBuilder implements ProcessorBuilderContract
 {
     public function __construct(private readonly ProcessorRegistry $registry)
     {
