@@ -52,31 +52,70 @@ final class ProcessorBuilderTest extends TestCase
         $this->assertSame($processor, $result);
     }
 
-    public function testBuildPipeline(): void
+    public function testBuildConfigurableProcessorWithEmptyConfig(): void
+    {
+        $processor = $this->createMock(ConfigurableProcessor::class);
+        $this->registry->expects($this->once())
+            ->method('get')
+            ->with('context', 'name')
+            ->willReturn($processor);
+
+        $processor->expects($this->never())
+            ->method('configure');
+
+        $result = $this->builder->build('context', 'name', []);
+        $this->assertSame($processor, $result);
+    }
+
+    public function testBuildPipelineWithVariousProcessorTypes(): void
     {
         $processor1 = $this->createMock(Processor::class);
         $processor2 = $this->createMock(ConfigurableProcessor::class);
+        $processor3 = $this->createMock(Processor::class);
 
-        $this->registry->expects($this->exactly(2))
+        $this->registry->expects($this->exactly(3))
             ->method('get')
-            ->willReturnCallback(function ($context, $name) use ($processor1, $processor2) {
-                if ('context' === $context && 'processor1' === $name) {
-                    return $processor1;
-                }
-                if ('context' === $context && 'processor2' === $name) {
-                    return $processor2;
-                }
-                $this->fail('Unexpected get() call');
-            });
+            ->willReturnMap([
+                ['context', 'processor1', $processor1],
+                ['context', 'processor2', $processor2],
+                ['context', 'processor3', $processor3],
+            ]);
 
         $processor2->expects($this->once())
             ->method('configure')
             ->with(['option' => 'value']);
 
         $result = $this->builder->buildPipeline('context', [
-            'processor1',
+            'processor1' => true,
             'processor2' => ['option' => 'value'],
+            'processor3' => [],
         ]);
+
+        $this->assertInstanceOf(Pipeline::class, $result);
+        $this->assertInstanceOf(ProcessorPipeline::class, $result);
+    }
+
+    public function testBuildPipelineWithInvalidProcessorSpec(): void
+    {
+        $processor = $this->createMock(Processor::class);
+
+        $this->registry->expects($this->once())
+            ->method('get')
+            ->with('context', 'validProcessor')
+            ->willReturn($processor);
+
+        $result = $this->builder->buildPipeline('context', [
+            'validProcessor' => true,
+            'invalidProcessor' => false,
+            'anotherInvalidProcessor' => null,
+        ]);
+
+        $this->assertInstanceOf(Pipeline::class, $result);
+    }
+
+    public function testBuildPipelineWithEmptySpecs(): void
+    {
+        $result = $this->builder->buildPipeline('context', []);
 
         $this->assertInstanceOf(Pipeline::class, $result);
         $this->assertInstanceOf(ProcessorPipeline::class, $result);

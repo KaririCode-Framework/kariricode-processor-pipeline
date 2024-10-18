@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace KaririCode\ProcessorPipeline;
 
 use KaririCode\Contract\Processor\ConfigurableProcessor;
@@ -27,33 +25,36 @@ class ProcessorBuilder implements ProcessorBuilderContract
     }
 
     /**
-     * @param array<int|string, string|array<string, mixed>> $processorSpecs
+     * @param array<string, mixed> $processorSpecs
      */
     public function buildPipeline(string $context, array $processorSpecs): Pipeline
     {
         $pipeline = new ProcessorPipeline();
-        foreach ($processorSpecs as $key => $spec) {
-            $processorName = $this->resolveProcessorName($key, $spec);
-            $processorConfig = $this->resolveProcessorConfig($key, $spec);
-            $processor = $this->build($context, $processorName, $processorConfig);
+
+        foreach ($processorSpecs as $name => $config) {
+            if (!$this->isValidProcessorSpec($config)) {
+                continue;
+            }
+
+            $processorConfig = $this->normalizeProcessorConfig($config);
+            $processor = $this->build($context, $name, $processorConfig);
             $pipeline->addProcessor($processor);
         }
 
         return $pipeline;
     }
 
-    private function isUnnamedProcessor(int|string $key): bool
+    private function isValidProcessorSpec(mixed $spec): bool
     {
-        return is_int($key);
+        return is_array($spec) || true === $spec;
     }
 
-    private function resolveProcessorName(int|string $key, string|array $spec): string
+    private function normalizeProcessorConfig(mixed $config): array
     {
-        return $this->isUnnamedProcessor($key) ? (string) $spec : (string) $key;
-    }
+        if (is_array($config)) {
+            return $config;
+        }
 
-    private function resolveProcessorConfig(int|string $key, string|array $spec): array
-    {
-        return $this->isUnnamedProcessor($key) ? [] : (array) $spec;
+        return [];
     }
 }
