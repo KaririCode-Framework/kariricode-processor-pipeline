@@ -6,6 +6,7 @@ namespace KaririCode\ProcessorPipeline;
 
 use KaririCode\Contract\Processor\Pipeline;
 use KaririCode\Contract\Processor\Processor;
+use KaririCode\Contract\Processor\ValidatableProcessor;
 
 class ProcessorPipeline implements Pipeline
 {
@@ -22,7 +23,14 @@ class ProcessorPipeline implements Pipeline
     {
         return array_reduce(
             $this->processors,
-            fn ($carry, Processor $processor) => $processor->process($carry),
+            static function ($carry, Processor $processor): mixed {
+                // Reset the processor's state if it's a ValidatableProcessor
+                if ($processor instanceof ValidatableProcessor) {
+                    $processor->reset();
+                }
+
+                return $processor->process($carry);
+            },
             $input
         );
     }
