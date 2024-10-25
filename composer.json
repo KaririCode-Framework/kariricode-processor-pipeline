@@ -22,7 +22,9 @@
   "require": {
     "php": "^8.3",
     "kariricode/data-structure": "^1.1",
-    "kariricode/contract": "^2.7"
+    "kariricode/contract": "^2.7",
+    "kariricode/property-inspector": "^1.0",
+    "kariricode/exception": "^1.2"
   },
   "autoload": {
     "psr-4": {

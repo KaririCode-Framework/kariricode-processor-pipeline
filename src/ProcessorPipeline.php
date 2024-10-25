@@ -7,6 +7,7 @@ namespace KaririCode\ProcessorPipeline;
 use KaririCode\Contract\Processor\Pipeline;
 use KaririCode\Contract\Processor\Processor;
 use KaririCode\Contract\Processor\ValidatableProcessor;
+use KaririCode\ProcessorPipeline\Exception\ProcessingException;
 
 class ProcessorPipeline implements Pipeline
 {
@@ -21,17 +22,48 @@ class ProcessorPipeline implements Pipeline
 
     public function process(mixed $input): mixed
     {
-        return array_reduce(
-            $this->processors,
-            static function ($carry, Processor $processor): mixed {
-                // Reset the processor's state if it's a ValidatableProcessor
-                if ($processor instanceof ValidatableProcessor) {
-                    $processor->reset();
-                }
+        try {
+            return array_reduce(
+                $this->processors,
+                $this->executeProcessor(...),
+                $input
+            );
+        } catch (\Exception $e) {
+            throw ProcessingException::pipelineExecutionFailed();
+        }
+    }
 
-                return $processor->process($carry);
-            },
-            $input
-        );
+    public function getProcessors(): array
+    {
+        return $this->processors;
+    }
+
+    public function hasProcessors(): bool
+    {
+        return !empty($this->processors);
+    }
+
+    public function clear(): void
+    {
+        $this->processors = [];
+    }
+
+    public function count(): int
+    {
+        return count($this->processors);
+    }
+
+    private function executeProcessor(mixed $carry, Processor $processor): mixed
+    {
+        try {
+            // Reset the processor state if it's validatable
+            if ($processor instanceof ValidatableProcessor) {
+                $processor->reset();
+            }
+
+            return $processor->process($carry);
+        } catch (\Exception $e) {
+            throw ProcessingException::processorExecutionFailed($processor::class);
+        }
     }
 }
