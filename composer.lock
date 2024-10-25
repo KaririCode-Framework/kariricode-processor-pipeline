@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2a02a3529fa7de8a9bfe2c155aebcb29",
+    "content-hash": "6522d2cfeebe2bdb8cdc93c110a5a646",
     "packages": [
         {
             "name": "kariricode/contract",
@@ -201,19 +201,20 @@
         },
         {
             "name": "kariricode/property-inspector",
-            "version": "v1.0.2",
+            "version": "v1.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/KaririCode-Framework/kariricode-property-inspector.git",
-                "reference": "17910e63e0db9e8e59310462c36f0cd1b0fe5159"
+                "reference": "5faa6ca584ee80fbfc8de456377020703a88ab80"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KaririCode-Framework/kariricode-property-inspector/zipball/17910e63e0db9e8e59310462c36f0cd1b0fe5159",
-                "reference": "17910e63e0db9e8e59310462c36f0cd1b0fe5159",
+                "url": "https://api.github.com/repos/KaririCode-Framework/kariricode-property-inspector/zipball/5faa6ca584ee80fbfc8de456377020703a88ab80",
+                "reference": "5faa6ca584ee80fbfc8de456377020703a88ab80",
                 "shasum": ""
             },
             "require": {
+                "kariricode/contract": "^2.7",
                 "php": "^8.3"
             },
             "require-dev": {
@@ -259,7 +260,7 @@
                 "issues": "https://github.com/KaririCode-Framework/kariricode-property-inspector/issues",
                 "source": "https://github.com/KaririCode-Framework/kariricode-property-inspector"
             },
-            "time": "2024-10-14T15:18:05+00:00"
+            "time": "2024-10-25T19:50:19+00:00"
         }
     ],
     "packages-dev": [

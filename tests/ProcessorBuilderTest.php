@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KaririCode\Tests\ProcessorPipeline;
+namespace KaririCode\ProcessorPipeline\Tests;
 
 use KaririCode\Contract\Processor\ConfigurableProcessor;
 use KaririCode\Contract\Processor\Pipeline;
