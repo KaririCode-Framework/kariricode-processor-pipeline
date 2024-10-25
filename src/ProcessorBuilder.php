@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KaririCode\ProcessorPipeline;
 
 use KaririCode\Contract\Processor\ConfigurableProcessor;
@@ -24,9 +26,6 @@ class ProcessorBuilder implements ProcessorBuilderContract
         return $processor;
     }
 
-    /**
-     * @param array<string, mixed> $processorSpecs
-     */
     public function buildPipeline(string $context, array $processorSpecs): Pipeline
     {
         $pipeline = new ProcessorPipeline();

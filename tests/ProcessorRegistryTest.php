@@ -6,13 +6,15 @@ namespace KaririCode\ProcessorPipeline\Tests;
 
 use KaririCode\Contract\Processor\Processor;
 use KaririCode\DataStructure\Map\HashMap;
+use KaririCode\ProcessorPipeline\Exception\ProcessorRuntimeException;
 use KaririCode\ProcessorPipeline\ProcessorRegistry;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class ProcessorRegistryTest extends TestCase
 {
     private ProcessorRegistry $registry;
-    private HashMap $mockHashMap;
+    private HashMap|MockObject $mockHashMap;
 
     protected function setUp(): void
     {
@@ -27,23 +29,23 @@ final class ProcessorRegistryTest extends TestCase
 
         $this->mockHashMap->expects($this->once())
             ->method('containsKey')
-            ->with('context')
+            ->with('payment')
             ->willReturn(false);
 
         $this->mockHashMap->expects($this->once())
             ->method('put')
-            ->with('context', $this->isInstanceOf(HashMap::class));
+            ->with('payment', $this->isInstanceOf(HashMap::class));
 
         $this->mockHashMap->expects($this->once())
             ->method('get')
-            ->with('context')
+            ->with('payment')
             ->willReturn($contextMap);
 
         $contextMap->expects($this->once())
             ->method('put')
-            ->with('name', $processor);
+            ->with('validate', $processor);
 
-        $this->registry->register('context', 'name', $processor);
+        $this->registry->register('payment', 'validate', $processor);
     }
 
     public function testGet(): void
@@ -53,25 +55,25 @@ final class ProcessorRegistryTest extends TestCase
 
         $this->mockHashMap->expects($this->once())
             ->method('containsKey')
-            ->with('context')
+            ->with('payment')
             ->willReturn(true);
 
         $this->mockHashMap->expects($this->once())
             ->method('get')
-            ->with('context')
+            ->with('payment')
             ->willReturn($contextMap);
 
         $contextMap->expects($this->once())
             ->method('containsKey')
-            ->with('name')
+            ->with('validate')
             ->willReturn(true);
 
         $contextMap->expects($this->once())
             ->method('get')
-            ->with('name')
+            ->with('validate')
             ->willReturn($processor);
 
-        $result = $this->registry->get('context', 'name');
+        $result = $this->registry->get('payment', 'validate');
         $this->assertSame($processor, $result);
     }
 
@@ -79,13 +81,13 @@ final class ProcessorRegistryTest extends TestCase
     {
         $this->mockHashMap->expects($this->once())
             ->method('containsKey')
-            ->with('context')
+            ->with('payment')
             ->willReturn(false);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage("Context 'context' not found.");
+        $this->expectException(ProcessorRuntimeException::class);
+        $this->expectExceptionMessage("Processor context 'payment' not found");
 
-        $this->registry->get('context', 'name');
+        $this->registry->get('payment', 'validate');
     }
 
     public function testGetProcessorNotFound(): void
@@ -94,23 +96,23 @@ final class ProcessorRegistryTest extends TestCase
 
         $this->mockHashMap->expects($this->once())
             ->method('containsKey')
-            ->with('context')
+            ->with('payment')
             ->willReturn(true);
 
         $this->mockHashMap->expects($this->once())
             ->method('get')
-            ->with('context')
+            ->with('payment')
             ->willReturn($contextMap);
 
         $contextMap->expects($this->once())
             ->method('containsKey')
-            ->with('name')
+            ->with('validate')
             ->willReturn(false);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage("Processor 'name' not found in context 'context'.");
+        $this->expectException(ProcessorRuntimeException::class);
+        $this->expectExceptionMessage("Processor 'validate' not found in context 'payment'");
 
-        $this->registry->get('context', 'name');
+        $this->registry->get('payment', 'validate');
     }
 
     public function testGetContextProcessors(): void
@@ -119,15 +121,15 @@ final class ProcessorRegistryTest extends TestCase
 
         $this->mockHashMap->expects($this->once())
             ->method('containsKey')
-            ->with('context')
+            ->with('payment')
             ->willReturn(true);
 
         $this->mockHashMap->expects($this->once())
             ->method('get')
-            ->with('context')
+            ->with('payment')
             ->willReturn($contextMap);
 
-        $result = $this->registry->getContextProcessors('context');
+        $result = $this->registry->getContextProcessors('payment');
         $this->assertSame($contextMap, $result);
     }
 
@@ -135,12 +137,12 @@ final class ProcessorRegistryTest extends TestCase
     {
         $this->mockHashMap->expects($this->once())
             ->method('containsKey')
-            ->with('context')
+            ->with('payment')
             ->willReturn(false);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage("Context 'context' not found.");
+        $this->expectException(ProcessorRuntimeException::class);
+        $this->expectExceptionMessage("Processor context 'payment' not found");
 
-        $this->registry->getContextProcessors('context');
+        $this->registry->getContextProcessors('payment');
     }
 }
