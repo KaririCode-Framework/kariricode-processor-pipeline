@@ -126,4 +126,12 @@ class AttributeHandler implements PropertyAttributeHandler, PropertyChangeApplie
     {
         return $this->processingResultMessages;
     }
+
+    public function reset(): void
+    {
+        $this->processedPropertyValues = [];
+        $this->processingResultErrors = [];
+        $this->processingResultMessages = [];
+        $this->processorCache = [];
+    }
 }
