@@ -5,19 +5,17 @@ declare(strict_types=1);
 namespace KaririCode\ProcessorPipeline\Handler;
 
 use KaririCode\Contract\Processor\ProcessorBuilder;
-use KaririCode\Contract\Processor\ValidatableProcessor;
-use KaririCode\ProcessorPipeline\Result\ProcessedData;
-use KaririCode\ProcessorPipeline\Result\ProcessingError;
+use KaririCode\ProcessorPipeline\AttributeHandler;
+use KaririCode\ProcessorPipeline\Exception\ProcessorRuntimeException;
 use KaririCode\ProcessorPipeline\Result\ProcessingResultCollection;
-use KaririCode\PropertyInspector\AttributeHandler;
 
-class ProcessorAttributeHandler extends AttributeHandler
+final class ProcessorAttributeHandler extends AttributeHandler
 {
-    protected ProcessingResultCollection $results;
+    private ProcessingResultCollection $results;
 
     public function __construct(
-        private readonly string $identifier,
-        private readonly ProcessorBuilder $builder
+        string $identifier,
+        ProcessorBuilder $builder
     ) {
         parent::__construct($identifier, $builder);
         $this->results = new ProcessingResultCollection();
@@ -25,74 +23,48 @@ class ProcessorAttributeHandler extends AttributeHandler
 
     public function processPropertyValue(string $property, mixed $value): mixed
     {
-        $pipeline = $this->builder->buildPipeline(
-            $this->identifier,
-            $this->getPropertyProcessors($property)
-        );
+        $processorSpecs = $this->getPropertyProcessors($property);
+
+        if (empty($processorSpecs)) {
+            return $value;
+        }
 
         try {
-            $processedValue = $pipeline->process($value);
-            $this->storeProcessedValue($property, $processedValue);
+            $pipeline = $this->builder->buildPipeline(
+                $this->identifier,
+                $processorSpecs
+            );
 
-            // Verifica se há erros de validação
-            $this->checkValidationErrors($property, $pipeline);
+            $processedValue = $pipeline->process($value);
+            $this->results->setProcessedData($property, $processedValue);
 
             return $processedValue;
         } catch (\Exception $e) {
-            $this->storeProcessingError($property, $e);
-
-            return $value;
+            throw ProcessorRuntimeException::processingFailed($property, $e);
         }
     }
 
-    protected function checkValidationErrors(string $property, $pipeline): void
+    public function getProcessedPropertyValues(): array
     {
-        foreach ($pipeline->getProcessors() as $processor) {
-            if ($processor instanceof ValidatableProcessor && !$processor->isValid()) {
-                $this->storeValidationError(
-                    $property,
-                    $processor->getErrorKey(),
-                    $processor->getErrorMessage()
-                );
-            }
-        }
+        return [
+            'values' => $this->results->getProcessedData(),
+            'timestamp' => time(),
+        ];
     }
 
-    protected function storeProcessedValue(string $property, mixed $value): void
+    public function getProcessingResultErrors(): array
     {
-        $processedData = new ProcessedData($property, $value);
-        $this->results->addProcessedData($processedData);
+        return $this->results->getErrors();
     }
 
-    protected function storeProcessingError(string $property, \Exception $exception): void
+    public function hasErrors(): bool
     {
-        $error = new ProcessingError(
-            $property,
-            'processingError',
-            $exception->getMessage()
-        );
-        $this->results->addError($error);
-    }
-
-    protected function storeValidationError(string $property, string $errorKey, string $message): void
-    {
-        $error = new ProcessingError($property, $errorKey, $message);
-        $this->results->addError($error);
+        return $this->results->hasErrors();
     }
 
     public function getProcessingResults(): ProcessingResultCollection
     {
         return $this->results;
-    }
-
-    public function getProcessedPropertyValues(): array
-    {
-        return $this->results->getProcessedDataAsArray();
-    }
-
-    public function getProcessingResultErrors(): array
-    {
-        return $this->results->getErrorsAsArray();
     }
 
     public function reset(): void
