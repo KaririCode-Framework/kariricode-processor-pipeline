@@ -17,13 +17,15 @@ class ProcessorRegistry implements ProcessorRegistryContract
     ) {
     }
 
-    public function register(string $context, string $name, Processor $processor): void
+    public function register(string $context, string $name, Processor $processor): static
     {
         if (!$this->processors->containsKey($context)) {
             $this->processors->put($context, new HashMap());
         }
         $contextMap = $this->processors->get($context);
         $contextMap->put($name, $processor);
+
+        return $this;
     }
 
     public function get(string $context, string $name): Processor

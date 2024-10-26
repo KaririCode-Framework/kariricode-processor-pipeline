@@ -4,151 +4,105 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use KaririCode\Contract\Processor\ConfigurableProcessor;
 use KaririCode\Contract\Processor\Processor;
 use KaririCode\ProcessorPipeline\ProcessorBuilder;
 use KaririCode\ProcessorPipeline\ProcessorRegistry;
+use KaririCode\ProcessorPipeline\Result\ProcessingResultCollection;
 
-// Defining the User entity
-class User
+// Example of actual processors.
+class UpperCaseProcessor implements Processor
 {
-    public function __construct(
-        private string $email,
-        private string $name,
-        private int $age
-    ) {
-    }
-
-    public function getEmail(): string
+    public function process(mixed $input): mixed
     {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): void
-    {
-        $this->email = $email;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): void
-    {
-        $this->name = $name;
-    }
-
-    public function getAge(): int
-    {
-        return $this->age;
-    }
-
-    public function setAge(int $age): void
-    {
-        $this->age = $age;
+        return strtoupper((string) $input);
     }
 }
 
-// Defining specific processors
-class EmailNormalizer implements Processor
+class TrimProcessor implements Processor
 {
-    public function process(mixed $input): string
+    public function process(mixed $input): mixed
     {
-        return strtolower(trim($input));
+        return trim((string) $input);
     }
 }
 
-class EmailValidator implements Processor
+class EmailTransformerProcessor implements Processor
 {
-    public function process(mixed $input): bool
+    public function process(mixed $input): mixed
     {
-        return false !== filter_var($input, FILTER_VALIDATE_EMAIL);
+        return strtolower((string) $input);
     }
 }
 
-class NameCapitalizer implements Processor
+class EmailValidatorProcessor implements Processor
 {
-    public function process(mixed $input): string
+    public function __construct(private ProcessingResultCollection $resultCollection)
     {
-        return ucwords(strtolower($input));
     }
-}
 
-class AgeValidator implements ConfigurableProcessor
-{
-    private int $minAge = 0;
-    private int $maxAge = 120;
-
-    public function configure(array $options): void
+    public function process(mixed $input): mixed
     {
-        if (isset($options['minAge'])) {
-            $this->minAge = $options['minAge'];
+        if (!filter_var($input, FILTER_VALIDATE_EMAIL)) {
+            $this->resultCollection->addError(
+                self::class,
+                'invalidFormat',
+                "Invalid email format: $input"
+            );
         }
-        if (isset($options['maxAge'])) {
-            $this->maxAge = $options['maxAge'];
-        }
-    }
 
-    public function process(mixed $input): bool
-    {
-        return is_numeric($input) && $input >= $this->minAge && $input <= $this->maxAge;
+        return $input;
     }
 }
 
-// Configuring the processor registry
+// Function to handle pipeline execution
+function executePipeline(ProcessorBuilder $builder, ProcessorRegistry $registry, array $processorSpecs, string $input): void
+{
+    $resultCollection = new ProcessingResultCollection();
+    $context = 'example_context';
+
+    $registry->register($context, 'upper_case', new UpperCaseProcessor())
+        ->register($context, 'trim', new TrimProcessor())
+        ->register($context, 'email_transform', new EmailTransformerProcessor())
+        ->register($context, 'email_validate', new EmailValidatorProcessor($resultCollection));
+
+    try {
+        $pipeline = $builder->buildPipeline($context, $processorSpecs);
+        $output = $pipeline->process($input);
+
+        // Displaying the results
+        echo "Original Input: '$input'\n";
+        echo "Pipeline Output: '$output'\n";
+
+        // Display errors if any
+        if ($resultCollection->hasErrors()) {
+            echo "\nProcessing Errors:\n";
+            print_r($resultCollection->getErrors());
+        } else {
+            echo "\nNo processing errors encountered.\n";
+        }
+    } catch (Exception $e) {
+        echo 'Error executing the pipeline: ' . $e->getMessage() . "\n";
+    }
+}
+
+// Register processors to a context in the registry.
 $registry = new ProcessorRegistry();
-$registry->register('user', 'emailNormalizer', new EmailNormalizer());
-$registry->register('user', 'emailValidator', new EmailValidator());
-$registry->register('user', 'nameCapitalizer', new NameCapitalizer());
-$registry->register('user', 'ageValidator', new AgeValidator());
-
-// Creating the ProcessorBuilder
 $builder = new ProcessorBuilder($registry);
 
-// Function to process user data
-function processUser(User $user, ProcessorBuilder $builder): array
-{
-    $result = [];
+// Execute scenario 1 - Valid input
+$processorSpecs = [
+    'upper_case' => false,
+    'trim' => true,
+    'email_transform' => true,
+    'email_validate' => true,
+];
+$input = '   Example@Email.COM   ';
 
-    // Processing the email
-    $emailNormalizerPipeline = $builder->buildPipeline('user', ['emailNormalizer']);
-    $normalizedEmail = $emailNormalizerPipeline->process($user->getEmail());
-    $user->setEmail($normalizedEmail);
-    $emailValidatorPipeline = $builder->buildPipeline('user', ['emailValidator']);
-    $result['email'] = [
-        'value' => $user->getEmail(),
-        'isValid' => $emailValidatorPipeline->process($user->getEmail()),
-    ];
+echo "Scenario 1 - Valid Input\n";
+executePipeline($builder, $registry, $processorSpecs, $input);
 
-    // Processing the name
-    $namePipeline = $builder->buildPipeline('user', ['nameCapitalizer']);
-    $capitalizedName = $namePipeline->process($user->getName());
-    $user->setName($capitalizedName);
-    $result['name'] = $user->getName();
+// Execute scenario 2 - Invalid input
+$input = '   InvalidEmail@@@   ';
 
-    // Processing the age
-    $agePipeline = $builder->buildPipeline('user', ['ageValidator' => ['minAge' => 18, 'maxAge' => 100]]);
-    $result['age'] = [
-        'value' => $user->getAge(),
-        'isValid' => $agePipeline->process($user->getAge()),
-    ];
-
-    return $result;
-}
-
-// Usage example
-$user = new User(
-    email: '   JOHN.DOE@example.com  ',
-    name: 'jOHn doE',
-    age: 25
-);
-
-$processedData = processUser($user, $builder);
-print_r($processedData);
-
-// Printing the modified user
-echo "\nUser after processing:\n";
-echo 'Email: ' . $user->getEmail() . "\n";
-echo 'Name: ' . $user->getName() . "\n";
-echo 'Age: ' . $user->getAge() . "\n";
+echo "\nScenario 2 - Invalid Input (English)\n";
+executePipeline($builder, $registry, $processorSpecs, $input);
