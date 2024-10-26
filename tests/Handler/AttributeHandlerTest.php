@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KaririCode\PropertyInspector\Tests;
+namespace KaririCode\PropertyInspector\Tests\Handler;
 
 use KaririCode\Contract\Processor\Attribute\CustomizableMessageAttribute;
 use KaririCode\Contract\Processor\Attribute\ProcessableAttribute;
