@@ -11,9 +11,6 @@ use KaririCode\ProcessorPipeline\Processor\ProcessorConfigBuilder;
 use KaririCode\ProcessorPipeline\Processor\ProcessorValidator;
 use KaririCode\ProcessorPipeline\Result\ProcessingResultCollection;
 
-/**
- * Handler for processing attributes with configured processors.
- */
 final class ProcessorAttributeHandler extends AttributeHandler
 {
     private ProcessingResultCollection $results;
@@ -39,9 +36,6 @@ final class ProcessorAttributeHandler extends AttributeHandler
         return $result;
     }
 
-    /**
-     * Transfers results from parent handler to ProcessingResultCollection.
-     */
     private function transferResults(string $propertyName): void
     {
         $processedValues = parent::getProcessedPropertyValues();
@@ -78,25 +72,16 @@ final class ProcessorAttributeHandler extends AttributeHandler
         return $this->results->getErrors();
     }
 
-    /**
-     * Checks if there are any processing errors.
-     */
     public function hasErrors(): bool
     {
         return $this->results->hasErrors();
     }
 
-    /**
-     * Gets the processing results collection.
-     */
     public function getProcessingResults(): ProcessingResultCollection
     {
         return $this->results;
     }
 
-    /**
-     * Resets the processing state.
-     */
     public function reset(): void
     {
         parent::reset();
