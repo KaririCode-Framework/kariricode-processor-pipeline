@@ -1,4 +1,4 @@
-# KaririCode Framework: ProcessorPipeline Component
+# KaririCode Framework: Processor Pipeline Component
 
 [![en](https://img.shields.io/badge/lang-en-red.svg)](README.md) [![pt-br](https://img.shields.io/badge/lang-pt--br-green.svg)](README.pt-br.md)
 
@@ -62,49 +62,142 @@ require_once 'vendor/autoload.php';
 1. Define your processors:
 
 ```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
 use KaririCode\Contract\Processor\Processor;
-
-class EmailNormalizer implements Processor
-{
-    public function process(mixed $input): string
-    {
-        return strtolower(trim($input));
-    }
-}
-
-class EmailValidator implements Processor
-{
-    public function process(mixed $input): bool
-    {
-        return false !== filter_var($input, FILTER_VALIDATE_EMAIL);
-    }
-}
-```
-
-2. Set up the processor registry and builder:
-
-```php
-use KaririCode\ProcessorPipeline\ProcessorRegistry;
 use KaririCode\ProcessorPipeline\ProcessorBuilder;
+use KaririCode\ProcessorPipeline\ProcessorRegistry;
+use KaririCode\ProcessorPipeline\Result\ProcessingResultCollection;
 
+// Example of actual processors.
+class UpperCaseProcessor implements Processor
+{
+    public function process(mixed $input): mixed
+    {
+        return strtoupper((string) $input);
+    }
+}
+
+class TrimProcessor implements Processor
+{
+    public function process(mixed $input): mixed
+    {
+        return trim((string) $input);
+    }
+}
+
+class EmailTransformerProcessor implements Processor
+{
+    public function process(mixed $input): mixed
+    {
+        return strtolower((string) $input);
+    }
+}
+
+class EmailValidatorProcessor implements Processor
+{
+    public function __construct(private ProcessingResultCollection $resultCollection)
+    {
+    }
+
+    public function process(mixed $input): mixed
+    {
+        if (!filter_var($input, FILTER_VALIDATE_EMAIL)) {
+            $this->resultCollection->addError(
+                self::class,
+                'invalidFormat',
+                "Invalid email format: $input"
+            );
+        }
+        return $input;
+    }
+}
+
+// Function to handle pipeline execution
+function executePipeline(ProcessorBuilder $builder, ProcessorRegistry $registry, array $processorSpecs, string $input): void
+{
+    $resultCollection = new ProcessingResultCollection();
+    $context = 'example_context';
+
+    $registry->register($context, 'upper_case', new UpperCaseProcessor())
+             ->register($context, 'trim', new TrimProcessor())
+             ->register($context, 'email_transform', new EmailTransformerProcessor())
+             ->register($context, 'email_validate', new EmailValidatorProcessor($resultCollection));
+
+    try {
+        $pipeline = $builder->buildPipeline($context, $processorSpecs);
+        $output = $pipeline->process($input);
+
+        // Displaying the results
+        echo "Original Input: '$input'\n";
+        echo "Pipeline Output: '$output'\n";
+
+        // Display errors if any
+        if ($resultCollection->hasErrors()) {
+            echo "\nProcessing Errors:\n";
+            print_r($resultCollection->getErrors());
+        } else {
+            echo "\nNo processing errors encountered.\n";
+        }
+    } catch (\Exception $e) {
+        echo "Error executing the pipeline: " . $e->getMessage() . "\n";
+    }
+}
+
+// Register processors to a context in the registry.
 $registry = new ProcessorRegistry();
-$registry->register('user', 'emailNormalizer', new EmailNormalizer());
-$registry->register('user', 'emailValidator', new EmailValidator());
-
 $builder = new ProcessorBuilder($registry);
+
+// Execute scenario 1 - Valid input
+$processorSpecs = [
+    'upper_case' => false,
+    'trim' => true,
+    'email_transform' => true,
+    'email_validate' => true,
+];
+$input = "   Example@Email.COM   ";
+
+echo "Scenario 1 - Valid Input\n";
+executePipeline($builder, $registry, $processorSpecs, $input);
+
+// Execute scenario 2 - Invalid input
+$input = "   InvalidEmail@@@   ";
+
+echo "\nScenario 2 - Invalid Input:\n";
+executePipeline($builder, $registry, $processorSpecs, $input);
 ```
 
-3. Build and use a pipeline:
+### Test Output
 
-```php
-$pipeline = $builder->buildPipeline('user', ['emailNormalizer', 'emailValidator']);
+```bash
+php ./tests/application.php
+Scenario 1 - Valid Input
+Original Input: '   Example@Email.COM   '
+Pipeline Output: 'example@email.com'
 
-$email = '  JOHN.DOE@example.com  ';
-$normalizedEmail = $pipeline->process($email);
-$isValid = $pipeline->process($normalizedEmail);
+No processing errors encountered.
 
-echo "Normalized: $normalizedEmail\n";
-echo "Valid: " . ($isValid ? 'Yes' : 'No') . "\n";
+Scenario 2 - Invalid Input:
+Original Input: '   InvalidEmail@@@   '
+Pipeline Output: 'invalidemail@@@'
+
+Processing Errors:
+Array
+(
+    [EmailValidatorProcessor] => Array
+        (
+            [0] => Array
+                (
+                    [errorKey] => invalidFormat
+                    [message] => Invalid email format: invalidemail@@@
+                )
+
+        )
+)
 ```
 
 ### Advanced Usage
@@ -151,16 +244,67 @@ The ProcessorPipeline component is designed to work seamlessly with other Kariri
 
 Example using ProcessorPipeline with Validator:
 
+1. Define your data class with validation attributes:
+
 ```php
-use KaririCode\Validator\Validators\EmailValidator;
-use KaririCode\Validator\Validators\NotEmptyValidator;
+use KaririCode\Validator\Attribute\Validate;
 
-$registry->register('validation', 'email', new EmailValidator());
-$registry->register('validation', 'notEmpty', new NotEmptyValidator());
+class UserProfile
+{
+    #[Validate(
+        processors: [
+            'required',
+            'length' => ['minLength' => 3, 'maxLength' => 20],
+        ],
+        messages: [
+            'required' => 'Username is required',
+            'length' => 'Username must be between 3 and 20 characters',
+        ]
+    )]
+    private string $username = '';
 
-$validationPipeline = $builder->buildPipeline('validation', ['notEmpty', 'email']);
+    #[Validate(
+        processors: ['required', 'email'],
+        messages: [
+            'required' => 'Email is required',
+            'email' => 'Invalid email format',
+        ]
+    )]
+    private string $email = '';
 
-$isValid = $validationPipeline->process($userInput);
+    // Getters and setters...
+}
+```
+
+2. Set up the validator and use it:
+
+```php
+use KaririCode\ProcessorPipeline\ProcessorRegistry;
+use KaririCode\Validator\Validator;
+use KaririCode\Validator\Processor\Logic\RequiredValidator;
+use KaririCode\Validator\Processor\Input\LengthValidator;
+use KaririCode\Validator\Processor\Input\EmailValidator;
+
+$registry = new ProcessorRegistry();
+$registry->register('validator', 'required', new RequiredValidator())
+         ->register('validator', 'length', new LengthValidator())
+         ->register('validator', 'email', new EmailValidator());
+
+$validator = new Validator($registry);
+
+$userProfile = new UserProfile();
+$userProfile->setUsername('wa');  // Too short
+$userProfile->setEmail('invalid-email');  // Invalid format
+
+$result = $validator->validate($userProfile);
+
+if ($result->hasErrors()) {
+    foreach ($result->getErrors() as $property => $errors) {
+        foreach ($errors as $error) {
+            echo "$property: {$error['message']}\n";
+        }
+    }
+}
 ```
 
 ## Development and Testing
