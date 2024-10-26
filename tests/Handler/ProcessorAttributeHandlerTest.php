@@ -182,4 +182,44 @@ final class ProcessorAttributeHandlerTest extends TestCase
                 return null;
             });
     }
+
+    public function testValidateProcessorsWithInvalidProcessor(): void
+    {
+        $processorsConfig = ['processor1' => []];
+        $messages = ['processor1' => 'Validation failed for processor1'];
+
+        $processor = $this->createMock(ValidatableProcessor::class);
+        $processor->method('isValid')->willReturn(false);
+        $processor->method('getErrorKey')->willReturn('invalid_processor');
+
+        $this->builder->method('build')->willReturn($processor);
+
+        // Usar Reflection para acessar validateProcessors
+        $reflection = new \ReflectionClass(ProcessorAttributeHandler::class);
+        $method = $reflection->getMethod('validateProcessors');
+        $method->setAccessible(true);
+
+        $errors = $method->invoke($this->handler, $processorsConfig, $messages);
+
+        $this->assertArrayHasKey('processor1', $errors);
+        $this->assertEquals('invalid_processor', $errors['processor1']['errorKey']);
+        $this->assertEquals('Validation failed for processor1', $errors['processor1']['message']);
+    }
+
+    public function testProcessValueWithValidPipeline(): void
+    {
+        $config = ['processor1' => []];
+        $this->pipeline->method('process')->willReturn('processed_value');
+
+        $this->builder->method('buildPipeline')->willReturn($this->pipeline);
+
+        // Usar Reflection para acessar processValue
+        $reflection = new \ReflectionClass(ProcessorAttributeHandler::class);
+        $method = $reflection->getMethod('processValue');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->handler, 'input_value', $config);
+
+        $this->assertEquals('processed_value', $result);
+    }
 }

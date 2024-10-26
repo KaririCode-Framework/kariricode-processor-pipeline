@@ -33,33 +33,6 @@ final class ProcessorRuntimeException extends RuntimeException
         );
     }
 
-    public static function invalidProcessor(string $processorName, string $details): self
-    {
-        return self::createException(
-            self::CODE_INVALID_PROCESSOR,
-            'PROCESSOR_INVALID',
-            "Invalid processor '{$processorName}': {$details}"
-        );
-    }
-
-    public static function invalidContext(string $context, string $details): self
-    {
-        return self::createException(
-            self::CODE_INVALID_CONTEXT,
-            'PROCESSOR_CONTEXT_INVALID',
-            "Invalid processor context '{$context}': {$details}"
-        );
-    }
-
-    public static function invalidConfiguration(string $processorName, string $details): self
-    {
-        return self::createException(
-            self::CODE_PROCESSOR_CONFIG_INVALID,
-            'PROCESSOR_CONFIG_INVALID',
-            "Invalid processor configuration for '{$processorName}': {$details}"
-        );
-    }
-
     public static function processingFailed(string $property): self
     {
         return self::createException(
