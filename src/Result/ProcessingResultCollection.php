@@ -61,7 +61,7 @@ namespace KaririCode\ProcessorPipeline\Result;
  * @author    Walmir Silva <walmir.silva@kariricode.org>
  * @copyright 2025 KaririCode
  * @license   MIT
- * @version   4.0.0
+ * @version   2.0.0
  * @since     1.0.0
  *
  * @see \KaririCode\ProcessorPipeline\Pipeline\Pipeline      Pipeline integration
