@@ -1,7 +1,5 @@
-# KaririCode Framework: ProcessorPipeline V4.0
+# KaririCode Framework: ProcessorPipeline
 
-[![en](https://img.shields.io/badge/lang-en-red.svg)](README.md)
-[![pt-br](https://img.shields.io/badge/lang-pt--br-green.svg)](README.pt-br.md)
 [![PHP 8.4+](https://img.shields.io/badge/PHP-8.4+-777BB4?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![ARFA 1.3](https://img.shields.io/badge/ARFA-1.3-orange.svg)](docs/specs/SPEC-001-processor-pipeline.md)
@@ -214,11 +212,10 @@ ProcessorBuilder ──→ ProcessorRegistry
 ```bash
 git clone https://github.com/KaririCode-Framework/kariricode-processor-pipeline.git
 cd kariricode-processor-pipeline
-make setup-env && make up && make composer-install
-make test          # Run tests
-make coverage      # Coverage report
-make cs-fix        # Code style
-make quality       # Full quality check
+composer install
+kcode init
+kcode test      # Run tests
+kcode quality   # Full quality check
 ```
 
 ## Documentation
