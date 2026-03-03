@@ -26,6 +26,7 @@ jobs:
           php-version: '8.4'
           extensions: mbstring, xml
           coverage: pcov
+          tools: composer:v2
 
       # Pure dependency install — no scripts to avoid environment pollution
       - name: Install dependencies
