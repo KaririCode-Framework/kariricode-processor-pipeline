@@ -1,67 +1,52 @@
-# Arquivos de configuração do sistema
+# Sistema / IDE
 /.idea/
 *.sublime-project
 *.sublime-workspace
-/.phpunit.result.cache
-/.php_cs.cache
-/.php_cs.dist.cache
-/phpstan.neon.dist
-/phpstan.neon.cache
-/.phpstan.result.cache
-/.phpcs-cache
+.DS_Store
+Thumbs.db
+.vscode/
 
 # Dependências
 /vendor/
 /node_modules/
 
-# Arquivos específicos do sistema operacional
-.DS_Store
-Thumbs.db
+# DevKit (gerado pelo kcode init — nunca versionar)
+.kcode/
 
-# Arquivos de build e compilação
+# Build e cobertura
 /build/
 /dist/
+coverage/
+coverage*/
+coverage-report-html/
+
+# Cache
+*.cache
 *.log
-*.tlog
 *.tmp
 *.temp
-
-# Arquivos e pastas de ambientes virtuais
-.env
-
-# Arquivos de cache
-/cache/
-*.cache
-*.class
-
-# Arquivos de log
-*.log
-*.sql
-*.sqlite
-
-# Pasta de testes que não devem ser incluídas no repositório
-coverage/
-coverage*
-
-# Arquivos de pacotes
-*.jar
-*.war
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-# Outros arquivos e pastas
 *.swp
 *~
 ._*
-temp/
-tmp/
-.vscode/launch.json
-.vscode/extensions.json
-tests/lista_de_arquivos.php
-tests/lista_de_arquivos_test.php
+
+# PHP caches
+/.phpunit.result.cache
+/.phpunit.cache
+/.php_cs.cache
+/.php_cs.dist.cache
+/phpstan.neon.cache
+/.phpstan.result.cache
+/.phpcs-cache
+
+# Ambiente — não necessário numa biblioteca
+.env
+.env.*
+
+# Lock — gerenciado pelo CI
+/composer.lock
+
+# Artefatos temporários
 lista_de_arquivos.txt
 lista_de_arquivos_tests.txt
-add_static_to_providers.php
-/composer.lock
+temp/
+tmp/
